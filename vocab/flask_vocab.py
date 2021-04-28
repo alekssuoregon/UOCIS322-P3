@@ -6,6 +6,7 @@ from a scrambled string)
 
 import flask
 import logging
+from flask import request
 
 # Our modules
 from src.letterbag import LetterBag
@@ -74,16 +75,15 @@ def success():
 #   a JSON request handler
 #######################
 
+"""
 @app.route("/_check", methods=["POST"])
 def check():
-    """
     User has submitted the form with a word ('attempt')
     that should be formed from the jumble and on the
     vocabulary list.  We respond depending on whether
     the word is on the vocab list (therefore correctly spelled),
     made only from the jumble letters, and not a word they
     already found.
-    """
     app.logger.debug("Entering check")
 
     # The data we need, from form and from cookie
@@ -117,6 +117,7 @@ def check():
     else:
        return flask.redirect(flask.url_for("keep_going"))
 
+"""
 
 ###############
 # AJAX request handlers
@@ -131,6 +132,27 @@ def example():
     app.logger.debug("Got a JSON request")
     rslt = {"key": "value"}
     return flask.jsonify(result=rslt)
+
+@app.route("/_check")
+def check():
+    data = request.args.get("data", type=str).strip()
+    total_count = request.args.get("len", type=int)
+    jumble = flask.session["jumble"]
+
+    all_items = data.split(" ")
+    matches = all_items[:len(all_items)-1]
+    text = all_items[len(all_items)-1]
+
+    # Is it good?
+    in_jumble = LetterBag(jumble).contains(text)
+    matched = WORDS.has(text)
+
+    rslt = {"is_in_jumble": in_jumble, "is_matched": matched, "is_repeat": text in matches, 
+            "is_complete": False}
+    rslt["is_complete"] = in_jumble and matched and not rslt["is_repeat"] and len(all_items) >= flask.session["target_count"] 
+
+    return flask.jsonify(result=rslt)
+
 
 
 #################

@@ -73,7 +73,7 @@
          <br />
          <div class="row">
             <div class="col-xs-6 text-center">
-               <form id="entry" method="POST" action="/_check">
+               <form id="entry">
                   <label for="attempt">Word:</label>
                   <input id="attempt" name="attempt" type="text" width="15"
                      autocomplete="off"  autofocus />
@@ -82,6 +82,53 @@
             </div>
          </div>
          <br />
+	 <h2>You found </h2>
+	 <p id="results"></p>
+	 <p id="messages" style="color:red"></p>
+	 <script>
+		 $("#entry").submit( function(event) {
+			 event.preventDefault();
+
+			 var new_val = $("#attempt").val();
+			 var txt = $("#results").text() + " " + new_val; 
+			 $.getJSON("/_check", { data: txt },
+				 function(data) {
+					 var in_jumble = data.result.is_in_jumble;
+					 var is_matched = data.result.is_matched;
+					 var is_repeat = data.result.is_repeat;
+					 var is_complete = data.result.is_complete;
+					 console.log("is_complete: " + is_complete);
+					 console.log("is_repeat: " + is_repeat);
+					 console.log("is_matched: " + is_matched);
+					 console.log("in_jumble: "+ in_jumble);
+
+					 if (is_complete) {
+						 window.location.href = "/success";
+						 return;
+					 }
+
+					 if (is_matched && in_jumble && !is_repeat) {
+						 console.log("HERE");
+			 		 	 console.log(txt);
+						 $("#results").text(txt);
+					 } else if (is_repeat) {
+						 $("#messages").text("You already found " + new_val);
+						 console.log("REPEAT");
+						 // show message
+					 } else if (!is_matched) {
+						 $("#messages").text(new_val + " isn't in the list of words");
+						 console.log("Not in list of words");
+						 // show message
+					 } else if (!in_jumble) {
+						 $("#messages").text(new_val + " can't be made from the jumble");
+						 console.log("Can't be made from jumble");
+						 //show message
+					 }
+				 }
+			 );
+		 });
+	 </script>
+	 <!--
          {% if session.matches|length is not equalto 0  %}
          <h2>You found </h2>
          <p id="results">
@@ -98,6 +145,7 @@
          {% endfor %}
          {% endif %}
          {% endwith %}
+	 -->
       </div>
       <!-- container -->
    </body>
