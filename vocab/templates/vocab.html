@@ -77,7 +77,7 @@
                   <label for="attempt">Word:</label>
                   <input id="attempt" name="attempt" type="text" width="15"
                      autocomplete="off"  autofocus />
-                  <input type="submit" name="try" />
+		  <!--  <input type="submit" name="try" /> -->
                </form>
             </div>
          </div>
@@ -88,7 +88,8 @@
 	 <script>
 		 $("#entry").submit( function(event) {
 			 event.preventDefault();
-
+		 });
+		 $("#attempt").keyup( function(event) {
 			 var new_val = $("#attempt").val();
 			 var txt = $("#results").text() + " " + new_val; 
 			 $.getJSON("/_check", { data: txt },
@@ -97,32 +98,22 @@
 					 var is_matched = data.result.is_matched;
 					 var is_repeat = data.result.is_repeat;
 					 var is_complete = data.result.is_complete;
-					 console.log("is_complete: " + is_complete);
-					 console.log("is_repeat: " + is_repeat);
-					 console.log("is_matched: " + is_matched);
-					 console.log("in_jumble: "+ in_jumble);
 
 					 if (is_complete) {
 						 window.location.href = "/success";
 						 return;
 					 }
 
+					 $("#messages").text("");
 					 if (is_matched && in_jumble && !is_repeat) {
-						 console.log("HERE");
-			 		 	 console.log(txt);
+						 $("#attempt").val("");
 						 $("#results").text(txt);
 					 } else if (is_repeat) {
 						 $("#messages").text("You already found " + new_val);
-						 console.log("REPEAT");
-						 // show message
 					 } else if (!is_matched) {
 						 $("#messages").text(new_val + " isn't in the list of words");
-						 console.log("Not in list of words");
-						 // show message
 					 } else if (!in_jumble) {
 						 $("#messages").text(new_val + " can't be made from the jumble");
-						 console.log("Can't be made from jumble");
-						 //show message
 					 }
 				 }
 			 );
